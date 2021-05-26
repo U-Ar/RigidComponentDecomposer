@@ -38,22 +38,6 @@ std::pair<int,int> pebble_game_upper(int n, int m, std::vector<std::vector<int>>
                 edge_insert(D,DI,pebbles,u,G[u][i]);
                 bool flag = component_detection(n,k,l,D,DI,pebbles,u,G[u][i],visited,marked);
                 
-            
-                // debug info
-                /*
-                std::cout << (flag ? "component detected" : "component not detected") << std::endl;
-                std::cout << "V':" << std::endl;
-                for (size_t i = 0; i < marked.size(); i++)
-                { std::cout << (marked[i] ? 1 : 0) << " "; } std::cout << std::endl;
-                std::cout << "pebbles:" << std::endl;
-                for (size_t i = 0; i < pebbles.size(); i++)
-                { std::cout << pebbles[i] << " "; } 
-                std::cout << std::endl;
-                print_graph(D);
-                print_graph(DI);
-                std::cout << std::endl << std::endl;
-                upf.dump();
-                */
                 if (flag) component_maintenance_upper(n,marked,upf);
                 
             }
@@ -94,8 +78,6 @@ std::pair<int,int> pebble_game_lower(int n, int m, std::vector<std::vector<int>>
     return gc_size;
 }
 
-
-
 //remove an element in vector
 //pop back after swapping the element with back
 void edge_deletion(int u, int v,
@@ -134,11 +116,6 @@ void _pebble_DFS(int n,
                 std::vector<int>& path,
                 bool & finished)
 {
-    /*
-    for (int i = 0; i < n; i++) std::cout << pebbles[i] << " ";
-    print_graph(D);
-    std::cout << std::endl;
-    */
     for (size_t i = 0; i < D[u].size(); ++i)
     {
         if (!visited[D[u][i]])

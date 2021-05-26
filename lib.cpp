@@ -283,7 +283,7 @@ std::pair<int,int> Union_pair_find::component_size_top2()
 }
 
 
-//below: implemantation of UnionFind
+// ---- implemantation of UnionFind --------
 
 Union_find::Union_find(int n)
     : par(n,-1), sz(n,1) 
