@@ -7,6 +7,7 @@
 #include<utility>
 #include<algorithm>
 #include<exception>
+#include<unordered_set>
 
 void print_graph(std::vector<std::vector<int>> const& G);
 
@@ -165,6 +166,21 @@ public:
     void included_union(std::vector<bool> const& mk);
     void renumber();
     void dump();
+    std::pair<int,int> component_size_top2();
+};
+
+class Union_find
+{
+    std::vector<int> par;
+    std::vector<int> sz;
+public:
+    explicit Union_find(int n);
+    void init();
+    bool find(int u, int v);
+    void unite(int u, int v);
+    int parent(int u);
+    int size(int u);
+    std::pair<int,int> component_size_top2();
 };
 
 

@@ -1,6 +1,21 @@
 #include "pebble.h"
 
-void pebble_game(int n, int m, std::vector<std::vector<int>> const& G, int k, int l)
+std::pair<int,int> pebble_game(int n, int m, std::vector<std::vector<int>> const& G, int k, int l)
+{
+    if (l <= 0 || l >= 2*k) throw std::invalid_argument("pebble game with such (k,l) is not implemented.");
+    else if (l >= k+1)
+    {
+        //edge-disjoint
+        return pebble_game_upper(n,m,G,k,l);
+    }
+    else 
+    {
+        //vertex-disjoint
+        return pebble_game_lower(n,m,G,k,l);
+    }
+}
+
+std::pair<int,int> pebble_game_upper(int n, int m, std::vector<std::vector<int>> const& G, int k, int l)
 {
     std::vector<std::vector<int>> D(n,std::vector<int>{});
     std::vector<std::vector<int>> DI(n,std::vector<int>{});
@@ -24,7 +39,8 @@ void pebble_game(int n, int m, std::vector<std::vector<int>> const& G, int k, in
                 bool flag = component_detection(n,k,l,D,DI,pebbles,u,G[u][i],visited,marked);
                 
             
-                /* debug info
+                // debug info
+                /*
                 std::cout << (flag ? "component detected" : "component not detected") << std::endl;
                 std::cout << "V':" << std::endl;
                 for (size_t i = 0; i < marked.size(); i++)
@@ -38,14 +54,47 @@ void pebble_game(int n, int m, std::vector<std::vector<int>> const& G, int k, in
                 std::cout << std::endl << std::endl;
                 upf.dump();
                 */
+                if (flag) component_maintenance_upper(n,marked,upf);
                 
-
-                if (flag) component_maintenance(n,marked,upf);
             }
         }
     }
-    upf.dump();
+    std::pair<int,int> gc_size = upf.component_size_top2();
+    return gc_size;
 }
+
+std::pair<int,int> pebble_game_lower(int n, int m, std::vector<std::vector<int>> const& G, int k, int l)
+{
+    std::vector<std::vector<int>> D(n,std::vector<int>{});
+    std::vector<std::vector<int>> DI(n,std::vector<int>{});
+    std::vector<int> pebbles(n,k);
+    Union_find uf{n};
+
+    std::vector<bool> bfs_visited(n,false), visited(n,false), marked(n,false);
+    for (int u = 0; u < n; ++u)
+    {
+        bfs_visited[u] = true;
+        for (int i = 0; i < G[u].size(); ++i)
+        {
+            if (bfs_visited[G[u][i]]) continue;
+            if (uf.find(u,G[u][i])) continue;
+            else
+            {
+                //pebble search,insert
+                //component detection, maintenance
+                pebble_search(n,k,l,D,DI,pebbles,u,G[u][i],visited);
+                edge_insert(D,DI,pebbles,u,G[u][i]);
+                bool flag = component_detection(n,k,l,D,DI,pebbles,u,G[u][i],visited,marked);
+                if (flag) component_maintenance_lower(n,marked,uf);
+                
+            }
+        }
+    }
+    std::pair<int,int> gc_size = uf.component_size_top2();
+    return gc_size;
+}
+
+
 
 //remove an element in vector
 //pop back after swapping the element with back
@@ -220,9 +269,24 @@ bool component_detection(int n, int k, int l,
     return true;
 }
 
-void component_maintenance(int n, 
+void component_maintenance_upper(int n, 
                            std::vector<bool> const& marked,
                            Union_pair_find& upf)
 {
     upf.included_union(marked);
+}
+
+void component_maintenance_lower(int n,
+                           std::vector<bool> const& marked,
+                           Union_find& uf)
+{
+    int tmp = -1;
+    for (int i = 0; i < n; ++i)
+    {
+        if (marked[i])
+        {
+            if (tmp != -1) uf.unite(tmp,i);
+            tmp = i;
+        }
+    }
 }

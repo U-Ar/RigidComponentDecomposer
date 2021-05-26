@@ -60,8 +60,10 @@ bool Union_pair_find::pair_find(int u, int v)
         VCell *vc2 = new VCell;
         ECell *e   = new ECell{u,v};
         EHead *eh  = new EHead;
-        eh->cid = EL.bottom==nullptr ? 0 : EL.bottom->cid + 1;
+        if (EL.bottom==nullptr) eh->cid = 0;
+        else                    eh->cid = EL.bottom->cid + 1;
         eh->prev = EL.bottom;
+        eh->next = nullptr;
         vc1->assoc = vc2->assoc = eh;
         eh->head = eh->tail = e;
         if (EL.bottom == nullptr)
@@ -244,4 +246,112 @@ void Union_pair_find::dump()
         if (MV[i]) std::cout << i << " ";
     }
     std::cout << std::endl << std::endl;
+}
+
+std::pair<int,int> Union_pair_find::component_size_top2()
+{
+    int max1 = -1;
+    int max2 = -2;
+    std::unordered_set<int> uset{};
+
+
+    EHead* eh = EL.top;
+    while (eh != nullptr)
+    {
+        ECell* ec = eh->head;
+        while (ec != nullptr)
+        {
+            uset.insert(ec->e.first);
+            uset.insert(ec->e.second);
+            ec = ec->next;
+        }
+        int tmp = uset.size();
+        if (tmp > max1)
+        {
+            max2 = max1;
+            max1 = tmp;
+        } else if (tmp > max2)
+        {
+            max2 = tmp;
+        }
+
+        uset.clear();
+        eh = eh->next;
+    }
+
+    return std::make_pair(max1,max2);
+}
+
+
+//below: implemantation of UnionFind
+
+Union_find::Union_find(int n)
+    : par(n,-1), sz(n,1) 
+{
+    for (size_t i = 0; i < par.size(); ++i) par[i] = i; 
+}
+
+void Union_find::init()
+{
+    for (size_t i = 0; i < par.size(); ++i) 
+    {
+        par[i] = i; sz[i] = 0;
+    }
+}
+
+bool Union_find::find(int u, int v)
+{
+    return parent(u) == parent(v);
+}
+
+void Union_find::unite(int u, int v)
+{
+    int pu = parent(u);
+    int pv = parent(v);
+    if (pu == pv) return;
+    if (sz[pu] >= sz[pv]) 
+    {
+        par[pv] = pu;
+        sz[pu] += sz[pv];
+    } 
+    else 
+    {
+        par[pu] = pv;
+        sz[pv] += sz[pu];
+    }
+}
+
+int Union_find::parent(int u)
+{
+    while (u != par[u]) u = par[u];
+    return u;
+}
+
+int Union_find::size(int u)
+{
+    return sz[parent(u)];
+}
+
+
+std::pair<int,int> Union_find::component_size_top2()
+{
+    int max1 = -1, max2 = -2;
+    std::vector<bool> visited(sz.size(),false);
+
+    for (size_t i = 0; i < sz.size(); ++i)
+    {
+        int p = parent(i);
+        if (visited[p]) continue;
+        visited[p] = true;
+        if (sz[p] > max1) 
+        {
+            max2 = max1;
+            max1 = sz[p];
+        }
+        else if (sz[p] > max2)
+        {
+            max2 = sz[p];
+        }
+    }
+    return std::make_pair(max1,max2);
 }
